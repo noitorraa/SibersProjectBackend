@@ -1,0 +1,54 @@
+# Ignore build output
+/bin/
+/obj/
+/packages/
+*.user
+*.lock.json
+
+# Ignore Rider / Visual Studio / VS Code
+.vs/
+.idea/
+.vscode/
+*.suo
+*.userprefs
+*.*sln.docstates
+
+# Test results
+/TestResults/
+
+# Logs
+*.log
+
+# Entity Framework migrations history
+/Migrations/
+*.dbmodel
+
+# SQLite database files
+*.db
+*.db3
+*.sqlite
+*.sqlite3
+sibersDB.db
+/Database/*.db
+
+# User secrets
+appsettings.Development.json
+appsettings.Production.json
+secrets.json
+
+# NuGet
+*.nupkg
+*.snupkg
+
+# Publish output
+/publish/
+
+# OS metadata
+.DS_Store
+Thumbs.db
+
+# Benchmark results
+BenchmarkDotNet.Artifacts/
+
+# Local tool manifest
+.dotnet-tools.json
