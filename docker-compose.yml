@@ -1,0 +1,26 @@
+services:
+  webapp:
+    build:
+      context: .
+      dockerfile: sibersProject/Dockerfile
+    container_name: sibers-webapp
+    ports:
+      - "8080:8080"
+      - "8081:8081"
+    volumes:
+      - sqlite-data:/app/Database
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ASPNETCORE_URLS=http://+:8080
+      - SQLITE_PATH=/app/Database/sibersDB.db
+    restart: unless-stopped
+    networks:
+      - sibers-network
+
+volumes:
+  sqlite-data:
+    driver: local
+
+networks:
+  sibers-network:
+    driver: bridge

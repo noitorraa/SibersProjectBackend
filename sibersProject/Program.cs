@@ -4,8 +4,9 @@ using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
+var dbPath = Environment.GetEnvironmentVariable("SQLITE_PATH") ?? "./Database/sibersDB.db";
 builder.Services.AddDbContext<AppDbContext>(options =>
-    options.UseSqlite("Data Source=./sibersDB.db"));
+    options.UseSqlite($"Data Source={dbPath}"));
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
 builder.Services.AddScoped<IEmployeeService, EmployeeService>();
