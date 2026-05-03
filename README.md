@@ -30,8 +30,7 @@ SIBERS/
 │   │   ├── IProjectService.cs
 │   │   └── ProjectService.cs
 │   ├── Database/            # База данных SQLite
-│   │   ├── script.sql       # Скрипт инициализации БД
-│   │   └── sibersDB.db      # Файл базы данных
+│   │   └── script.sql       # Скрипт инициализации БД
 │   ├── Dockerfile           # Docker конфигурация
 │   └── Program.cs           # Точка входа
 ├── sibersProject.Tests/     # Тесты
