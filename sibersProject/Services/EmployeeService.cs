@@ -65,7 +65,7 @@ public class EmployeeService : IEmployeeService
 
     public async Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeDto dto)
     {
-        // Проверяем, существует ли email
+        // Check if email already exists
         var emailExists = await _context.Employees.AnyAsync(e => e.Email == dto.Email);
         if (emailExists)
             throw new ArgumentException("Employee with this email already exists");
@@ -99,7 +99,7 @@ public class EmployeeService : IEmployeeService
         var employee = await _context.Employees.FindAsync(id);
         if (employee == null) return false;
 
-        // Проверяем email на уникальность (исключая текущего сотрудника)
+        // Check email uniqueness (excluding current employee)
         var emailExists = await _context.Employees
             .AnyAsync(e => e.Email == dto.Email && e.Id != id);
         if (emailExists)
@@ -129,13 +129,13 @@ public class EmployeeService : IEmployeeService
     {
         var projectExists = await _context.Projects.AnyAsync(p => p.Id == projectId);
         var employeeExists = await _context.Employees.AnyAsync(e => e.Id == employeeId);
-        
+
         if (!projectExists || !employeeExists)
             throw new ArgumentException("Project or Employee not found");
 
         var existingLink = await _context.ProjectEmployees
             .FirstOrDefaultAsync(pe => pe.ProjectId == projectId && pe.EmployeeId == employeeId);
-        
+
         if (existingLink != null)
             throw new ArgumentException("Employee is already assigned to this project");
 

@@ -11,6 +11,7 @@ public class ProjectQueryParameters
     public int? CustomerCompanyId { get; set; }
     public int? ContractorCompanyId { get; set; }
     public int? ManagerId { get; set; }
-    public string? SortBy { get; set; } // Name, StartDate, EndDate, Priority, Status, CreatedAt
+    // Available sort fields: Name, StartDate, EndDate, Priority, Status, CreatedAt
+    public string? SortBy { get; set; }
     public bool Descending { get; set; } = false;
 }

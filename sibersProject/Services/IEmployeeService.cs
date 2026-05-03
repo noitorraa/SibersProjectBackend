@@ -9,8 +9,8 @@ public interface IEmployeeService
     Task<EmployeeDto> CreateEmployeeAsync(CreateEmployeeDto dto);
     Task<bool> UpdateEmployeeAsync(int id, UpdateEmployeeDto dto);
     Task<bool> DeleteEmployeeAsync(int id);
-    
-    // Методы для работы со связью Project-Employee
+
+    // Methods for managing Project-Employee relationships
     Task<bool> AddEmployeeToProjectAsync(int projectId, int employeeId, string? role = null);
     Task<bool> RemoveEmployeeFromProjectAsync(int projectId, int employeeId);
     Task<IEnumerable<EmployeeDto>> GetEmployeesByProjectIdAsync(int projectId);
