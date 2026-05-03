@@ -8,6 +8,7 @@ builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlite("Data Source=./sibersDB.db"));
 
 builder.Services.AddScoped<IProjectService, ProjectService>();
+builder.Services.AddScoped<IEmployeeService, EmployeeService>();
 
 builder.Services.AddControllers();
 

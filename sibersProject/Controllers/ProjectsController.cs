@@ -17,9 +17,9 @@ public class ProjectsController : ControllerBase
 
   // GET: api/projects
   [HttpGet]
-  public async Task<IActionResult> GetAll()
+  public async Task<IActionResult> GetAll([FromQuery] ProjectQueryParameters parameters)
   {
-    var projects = await _projectService.GetAllProjectsAsync();
+    var projects = await _projectService.GetFilteredProjectsAsync(parameters);
     return Ok(projects);
   }
 

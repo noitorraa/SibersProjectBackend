@@ -35,6 +35,72 @@ public class ProjectService : IProjectService
     return projects;
   }
 
+  public async Task<IEnumerable<ProjectDto>> GetFilteredProjectsAsync(ProjectQueryParameters parameters)
+  {
+    var query = _context.Projects.AsQueryable();
+
+    // Фильтрация
+    if (parameters.StartDateFrom.HasValue)
+        query = query.Where(p => p.StartDate >= parameters.StartDateFrom.Value);
+
+    if (parameters.StartDateTo.HasValue)
+        query = query.Where(p => p.StartDate <= parameters.StartDateTo.Value);
+
+    if (parameters.EndDateFrom.HasValue)
+        query = query.Where(p => p.EndDate >= parameters.EndDateFrom.Value);
+
+    if (parameters.EndDateTo.HasValue)
+        query = query.Where(p => p.EndDate <= parameters.EndDateTo.Value);
+
+    if (parameters.Priority.HasValue)
+        query = query.Where(p => p.Priority == parameters.Priority.Value);
+
+    if (!string.IsNullOrEmpty(parameters.Status))
+        query = query.Where(p => p.Status == parameters.Status);
+
+    if (parameters.CustomerCompanyId.HasValue)
+        query = query.Where(p => p.CustomerCompanyId == parameters.CustomerCompanyId.Value);
+
+    if (parameters.ContractorCompanyId.HasValue)
+        query = query.Where(p => p.ContractorCompanyId == parameters.ContractorCompanyId.Value);
+
+    if (parameters.ManagerId.HasValue)
+        query = query.Where(p => p.ManagerId == parameters.ManagerId.Value);
+
+    // Сортировка
+    if (!string.IsNullOrEmpty(parameters.SortBy))
+    {
+        query = parameters.SortBy switch
+        {
+            "Name" => parameters.Descending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+            "StartDate" => parameters.Descending ? query.OrderByDescending(p => p.StartDate) : query.OrderBy(p => p.StartDate),
+            "EndDate" => parameters.Descending ? query.OrderByDescending(p => p.EndDate) : query.OrderBy(p => p.EndDate),
+            "Priority" => parameters.Descending ? query.OrderByDescending(p => p.Priority) : query.OrderBy(p => p.Priority),
+            "Status" => parameters.Descending ? query.OrderByDescending(p => p.Status) : query.OrderBy(p => p.Status),
+            "CreatedAt" => parameters.Descending ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
+            _ => query.OrderBy(p => p.Id)
+        };
+    }
+
+    var projects = await query
+        .Select(p => new ProjectDto
+        {
+            Id = p.Id,
+            Name = p.Name,
+            CustomerCompanyId = p.CustomerCompanyId,
+            ContractorCompanyId = p.ContractorCompanyId,
+            ManagerId = p.ManagerId,
+            StartDate = p.StartDate,
+            EndDate = p.EndDate,
+            Priority = p.Priority,
+            Status = p.Status,
+            CreatedAt = p.CreatedAt
+        })
+        .ToListAsync();
+
+    return projects;
+  }
+
   public async Task<ProjectDto?> GetProjectByIdAsync(int id)
   {
     var project = await _context.Projects.FindAsync(id);

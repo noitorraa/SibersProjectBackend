@@ -5,6 +5,7 @@ namespace sibersProject.Services;
 public interface IProjectService
 {
   Task<IEnumerable<ProjectDto>> GetAllProjectsAsync();
+  Task<IEnumerable<ProjectDto>> GetFilteredProjectsAsync(ProjectQueryParameters parameters);
   Task<ProjectDto?> GetProjectByIdAsync(int id);
   Task<ProjectDto> CreateProjectAsync(CreateProjectDto dto);
   Task<bool> UpdateProjectAsync(int id, UpdateProjectDto dto);

@@ -24,16 +24,17 @@ public class ProjectsControllerTests
   public async Task GetAll_ShouldReturnOk_WithListOfProjects()
   {
     // Arrange
+    var parameters = new ProjectQueryParameters();
     var expectedProjects = new List<ProjectDto>
       {
           new ProjectDto { Id = 1, Name = "Project1", StartDate = DateOnly.Parse("2025-01-01") },
           new ProjectDto { Id = 2, Name = "Project2", StartDate = DateOnly.Parse("2025-02-01") }
       };
-    _serviceMock.Setup(s => s.GetAllProjectsAsync())
+    _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                 .ReturnsAsync(expectedProjects);
 
     // Act
-    var result = await _controller.GetAll();
+    var result = await _controller.GetAll(parameters);
 
     // Assert
     var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
