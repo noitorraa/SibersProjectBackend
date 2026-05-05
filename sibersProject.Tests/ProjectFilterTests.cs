@@ -28,10 +28,10 @@ public class ProjectFilterTests
             StartDateFrom = DateOnly.Parse("2025-01-01"),
             StartDateTo = DateOnly.Parse("2025-12-31")
         };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Project1", StartDate = DateOnly.Parse("2025-06-01") },
-            new ProjectDto { Id = 2, Name = "Project2", StartDate = DateOnly.Parse("2025-03-15") }
+            new ProjectDetailsDto { Id = 1, Name = "Project1", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, StartDate = DateOnly.Parse("2025-06-01") },
+            new ProjectDetailsDto { Id = 2, Name = "Project2", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, StartDate = DateOnly.Parse("2025-03-15") }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -41,7 +41,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -50,10 +50,10 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { Priority = 1 };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "High Priority", Priority = 1 },
-            new ProjectDto { Id = 3, Name = "Urgent", Priority = 1 }
+            new ProjectDetailsDto { Id = 1, Name = "High Priority", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 1 },
+            new ProjectDetailsDto { Id = 3, Name = "Urgent", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 1 }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -63,7 +63,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -72,9 +72,9 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { Status = "Active" };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Active Project", Status = "Active" }
+            new ProjectDetailsDto { Id = 1, Name = "Active Project", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Status = "Active" }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -84,7 +84,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -93,11 +93,11 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { SortBy = "Name", Descending = false };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 2, Name = "Alpha" },
-            new ProjectDto { Id = 1, Name = "Beta" },
-            new ProjectDto { Id = 3, Name = "Gamma" }
+            new ProjectDetailsDto { Id = 2, Name = "Alpha", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } },
+            new ProjectDetailsDto { Id = 1, Name = "Beta", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } },
+            new ProjectDetailsDto { Id = 3, Name = "Gamma", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -107,7 +107,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -116,11 +116,11 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { SortBy = "Priority", Descending = true };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Critical", Priority = 3 },
-            new ProjectDto { Id = 2, Name = "High", Priority = 2 },
-            new ProjectDto { Id = 3, Name = "Low", Priority = 1 }
+            new ProjectDetailsDto { Id = 1, Name = "Critical", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 3 },
+            new ProjectDetailsDto { Id = 2, Name = "High", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 2 },
+            new ProjectDetailsDto { Id = 3, Name = "Low", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 1 }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -130,7 +130,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -139,11 +139,11 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { SortBy = "StartDate", Descending = false };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Early", StartDate = DateOnly.Parse("2025-01-01") },
-            new ProjectDto { Id = 2, Name = "Middle", StartDate = DateOnly.Parse("2025-06-01") },
-            new ProjectDto { Id = 3, Name = "Late", StartDate = DateOnly.Parse("2025-12-01") }
+            new ProjectDetailsDto { Id = 1, Name = "Early", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, StartDate = DateOnly.Parse("2025-01-01") },
+            new ProjectDetailsDto { Id = 2, Name = "Middle", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, StartDate = DateOnly.Parse("2025-06-01") },
+            new ProjectDetailsDto { Id = 3, Name = "Late", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, StartDate = DateOnly.Parse("2025-12-01") }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -153,7 +153,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -168,9 +168,9 @@ public class ProjectFilterTests
             SortBy = "Name",
             Descending = false
         };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Active High Priority", Priority = 1, Status = "Active" }
+            new ProjectDetailsDto { Id = 1, Name = "Active High Priority", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, Priority = 1, Status = "Active" }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -180,7 +180,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -189,10 +189,10 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters();
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Project1" },
-            new ProjectDto { Id = 2, Name = "Project2" }
+            new ProjectDetailsDto { Id = 1, Name = "Project1", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } },
+            new ProjectDetailsDto { Id = 2, Name = "Project2", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -202,7 +202,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -211,9 +211,9 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { CustomerCompanyId = 1 };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Company1 Project", CustomerCompanyId = 1 }
+            new ProjectDetailsDto { Id = 1, Name = "Company1 Project", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, CustomerCompanyId = 1 }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -223,7 +223,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 
@@ -232,9 +232,9 @@ public class ProjectFilterTests
     {
         // Arrange
         var parameters = new ProjectQueryParameters { ManagerId = 1 };
-        var expectedProjects = new List<ProjectDto>
+        var expectedProjects = new List<ProjectDetailsDto>
         {
-            new ProjectDto { Id = 1, Name = "Managed by Ivan", ManagerId = 1 }
+            new ProjectDetailsDto { Id = 1, Name = "Managed by Ivan", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" }, ManagerId = 1 }
         };
         _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                     .ReturnsAsync(expectedProjects);
@@ -244,7 +244,7 @@ public class ProjectFilterTests
 
         // Assert
         var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+        var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
         returnedProjects.Should().BeEquivalentTo(expectedProjects);
     }
 }

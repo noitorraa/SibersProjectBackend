@@ -25,10 +25,10 @@ public class ProjectsControllerTests
   {
     // Arrange
     var parameters = new ProjectQueryParameters();
-    var expectedProjects = new List<ProjectDto>
+    var expectedProjects = new List<ProjectDetailsDto>
       {
-          new ProjectDto { Id = 1, Name = "Project1", StartDate = DateOnly.Parse("2025-01-01") },
-          new ProjectDto { Id = 2, Name = "Project2", StartDate = DateOnly.Parse("2025-02-01") }
+          new ProjectDetailsDto { Id = 1, Name = "Project1", StartDate = DateOnly.Parse("2025-01-01"), Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } },
+          new ProjectDetailsDto { Id = 2, Name = "Project2", StartDate = DateOnly.Parse("2025-02-01"), Manager = new EmployeeDto { FirstName = "Jane", LastName = "Smith" } }
       };
     _serviceMock.Setup(s => s.GetFilteredProjectsAsync(parameters))
                 .ReturnsAsync(expectedProjects);
@@ -38,7 +38,7 @@ public class ProjectsControllerTests
 
     // Assert
     var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
-    var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDto>>().Subject;
+    var returnedProjects = okResult.Value.Should().BeAssignableTo<IEnumerable<ProjectDetailsDto>>().Subject;
     returnedProjects.Should().BeEquivalentTo(expectedProjects);
   }
 
@@ -47,7 +47,7 @@ public class ProjectsControllerTests
   public async Task GetById_WhenProjectExists_ShouldReturnOk()
   {
     // Arrange
-    var project = new ProjectDto { Id = 1, Name = "Test" };
+    var project = new ProjectDetailsDto { Id = 1, Name = "Test", Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } };
     _serviceMock.Setup(s => s.GetProjectByIdAsync(1))
                 .ReturnsAsync(project);
 
@@ -64,7 +64,7 @@ public class ProjectsControllerTests
   {
     // Arrange
     _serviceMock.Setup(s => s.GetProjectByIdAsync(99))
-                .ReturnsAsync((ProjectDto?)null);
+                .ReturnsAsync((ProjectDetailsDto?)null);
 
     // Act
     var result = await _controller.GetById(99);
@@ -83,7 +83,7 @@ public class ProjectsControllerTests
       Name = "New Project",
       StartDate = DateOnly.Parse("2025-03-20")
     };
-    var createdProject = new ProjectDto { Id = 5, Name = "New Project", StartDate = DateOnly.Parse("2025-03-20") };
+    var createdProject = new ProjectDetailsDto { Id = 5, Name = "New Project", StartDate = DateOnly.Parse("2025-03-20"), Manager = new EmployeeDto { FirstName = "John", LastName = "Doe" } };
 
     _serviceMock.Setup(s => s.CreateProjectAsync(createDto))
                 .ReturnsAsync(createdProject);

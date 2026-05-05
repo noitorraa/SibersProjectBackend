@@ -2,6 +2,7 @@ using Microsoft.EntityFrameworkCore;
 using sibersProject.Data;
 using sibersProject.Data.Entities;
 using sibersProject.Data.DTO;
+using System.Linq.Expressions;
 
 namespace sibersProject.Services;
 
@@ -11,190 +12,180 @@ public class ProjectService : IProjectService
 
   public ProjectService(AppDbContext context)
   {
-  _context = context;
+    _context = context;
   }
 
-  public async Task<IEnumerable<ProjectDto>> GetAllProjectsAsync()
+  private static Expression<Func<Project, ProjectDetailsDto>> ProjectToDetailsDto => p => new ProjectDetailsDto
   {
-  var projects = await _context.Projects
-      .Select(p => new ProjectDto
-      {
-        Id = p.Id,
-        Name = p.Name,
-        CustomerCompanyId = p.CustomerCompanyId,
-        ContractorCompanyId = p.ContractorCompanyId,
-        ManagerId = p.ManagerId,
-        StartDate = p.StartDate,
-        EndDate = p.EndDate,
-        Priority = p.Priority,
-        Status = p.Status,
-        CreatedAt = p.CreatedAt
-      })
-      .ToListAsync();
-
-  return projects;
-  }
-
-  public async Task<IEnumerable<ProjectDto>> GetFilteredProjectsAsync(ProjectQueryParameters parameters)
-  {
-  var query = _context.Projects.AsQueryable();
-
-  // Filtering
-  if (parameters.StartDateFrom.HasValue)
-      query = query.Where(p => p.StartDate >= parameters.StartDateFrom.Value);
-
-  if (parameters.StartDateTo.HasValue)
-      query = query.Where(p => p.StartDate <= parameters.StartDateTo.Value);
-
-  if (parameters.EndDateFrom.HasValue)
-      query = query.Where(p => p.EndDate >= parameters.EndDateFrom.Value);
-
-  if (parameters.EndDateTo.HasValue)
-      query = query.Where(p => p.EndDate <= parameters.EndDateTo.Value);
-
-  if (parameters.Priority.HasValue)
-      query = query.Where(p => p.Priority == parameters.Priority.Value);
-
-  if (!string.IsNullOrEmpty(parameters.Status))
-      query = query.Where(p => p.Status == parameters.Status);
-
-  if (parameters.CustomerCompanyId.HasValue)
-      query = query.Where(p => p.CustomerCompanyId == parameters.CustomerCompanyId.Value);
-
-  if (parameters.ContractorCompanyId.HasValue)
-      query = query.Where(p => p.ContractorCompanyId == parameters.ContractorCompanyId.Value);
-
-  if (parameters.ManagerId.HasValue)
-      query = query.Where(p => p.ManagerId == parameters.ManagerId.Value);
-
-  // Sorting
-  if (!string.IsNullOrEmpty(parameters.SortBy))
-  {
-      query = parameters.SortBy switch
-      {
-          "Name" => parameters.Descending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
-          "StartDate" => parameters.Descending ? query.OrderByDescending(p => p.StartDate) : query.OrderBy(p => p.StartDate),
-          "EndDate" => parameters.Descending ? query.OrderByDescending(p => p.EndDate) : query.OrderBy(p => p.EndDate),
-          "Priority" => parameters.Descending ? query.OrderByDescending(p => p.Priority) : query.OrderBy(p => p.Priority),
-          "Status" => parameters.Descending ? query.OrderByDescending(p => p.Status) : query.OrderBy(p => p.Status),
-          "CreatedAt" => parameters.Descending ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
-          _ => query.OrderBy(p => p.Id)
-      };
-  }
-
-  var projects = await query
-      .Select(p => new ProjectDto
-      {
-          Id = p.Id,
-          Name = p.Name,
-          CustomerCompanyId = p.CustomerCompanyId,
-          ContractorCompanyId = p.ContractorCompanyId,
-          ManagerId = p.ManagerId,
-          StartDate = p.StartDate,
-          EndDate = p.EndDate,
-          Priority = p.Priority,
-          Status = p.Status,
-          CreatedAt = p.CreatedAt
-      })
-      .ToListAsync();
-
-  return projects;
-  }
-
-  public async Task<ProjectDto?> GetProjectByIdAsync(int id)
-  {
-  var project = await _context.Projects.FindAsync(id);
-  if (project == null) return null;
-
-  return new ProjectDto
-  {
-    Id = project.Id,
-    Name = project.Name,
-    CustomerCompanyId = project.CustomerCompanyId,
-    ContractorCompanyId = project.ContractorCompanyId,
-    ManagerId = project.ManagerId,
-    StartDate = project.StartDate,
-    EndDate = project.EndDate,
-    Priority = project.Priority,
-    Status = project.Status,
-    CreatedAt = project.CreatedAt
-  };
-  }
-
-  public async Task<ProjectDto> CreateProjectAsync(CreateProjectDto dto)
-  {
-  // Check if related entities exist
-  var customerExists = await _context.Companies.AnyAsync(c => c.Id == dto.CustomerCompanyId);
-  var contractorExists = await _context.Companies.AnyAsync(c => c.Id == dto.ContractorCompanyId);
-  var managerExists = await _context.Employees.AnyAsync(e => e.Id == dto.ManagerId);
-
-  if (!customerExists || !contractorExists || !managerExists)
-    throw new ArgumentException("Customer, Contractor or Manager not found");
-
-  var project = new Project
-  {
-    Name = dto.Name,
-    CustomerCompanyId = dto.CustomerCompanyId,
-    ContractorCompanyId = dto.ContractorCompanyId,
-    ManagerId = dto.ManagerId,
-    StartDate = dto.StartDate,
-    EndDate = dto.EndDate,
-    Priority = dto.Priority,
-    Status = dto.Status,
-    CreatedAt = DateTime.Now
+    Id = p.Id,
+    Name = p.Name,
+    CustomerCompanyId = p.CustomerCompanyId,
+    CustomerCompanyName = p.CustomerCompany.Name,
+    ContractorCompanyId = p.ContractorCompanyId,
+    ContractorCompanyName = p.ContractorCompany.Name,
+    ManagerId = p.ManagerId,
+    Manager = new EmployeeDto
+    {
+      Id = p.Manager.Id,
+      FirstName = p.Manager.FirstName,
+      LastName = p.Manager.LastName,
+      MiddleName = p.Manager.MiddleName,
+      Email = p.Manager.Email,
+      IsActive = p.Manager.IsActive
+    },
+    StartDate = p.StartDate,
+    EndDate = p.EndDate,
+    Priority = p.Priority,
+    Status = p.Status ?? string.Empty,
+    CreatedAt = p.CreatedAt
   };
 
-  _context.Projects.Add(project);
-  await _context.SaveChangesAsync();
-
-  return new ProjectDto
+  public async Task<IEnumerable<ProjectDetailsDto>> GetAllProjectsAsync()
   {
-    Id = project.Id,
-    Name = project.Name,
-    CustomerCompanyId = project.CustomerCompanyId,
-    ContractorCompanyId = project.ContractorCompanyId,
-    ManagerId = project.ManagerId,
-    StartDate = project.StartDate,
-    EndDate = project.EndDate,
-    Priority = project.Priority,
-    Status = project.Status,
-    CreatedAt = project.CreatedAt
-  };
+    return await _context.Projects
+        .Include(p => p.CustomerCompany)
+        .Include(p => p.ContractorCompany)
+        .Include(p => p.Manager)
+        .Select(ProjectToDetailsDto)
+        .ToListAsync();
+  }
+
+  public async Task<IEnumerable<ProjectDetailsDto>> GetFilteredProjectsAsync(ProjectQueryParameters parameters)
+  {
+    var query = _context.Projects
+        .Include(p => p.CustomerCompany)
+        .Include(p => p.ContractorCompany)
+        .Include(p => p.Manager)
+        .AsQueryable();
+
+    query = ApplyFilters(query, parameters);
+    query = ApplySorting(query, parameters);
+
+    return await query.Select(ProjectToDetailsDto).ToListAsync();
+  }
+
+  public async Task<ProjectDetailsDto?> GetProjectByIdAsync(int id)
+  {
+    return await _context.Projects
+        .Include(p => p.CustomerCompany)
+        .Include(p => p.ContractorCompany)
+        .Include(p => p.Manager)
+        .Where(p => p.Id == id)
+        .Select(ProjectToDetailsDto)
+        .FirstOrDefaultAsync();
+  }
+
+  public async Task<ProjectDetailsDto> CreateProjectAsync(CreateProjectDto dto)
+  {
+    if (!await ValidateRelatedEntitiesAsync(dto.CustomerCompanyId, dto.ContractorCompanyId, dto.ManagerId))
+      throw new ArgumentException("Customer, Contractor or Manager not found");
+
+    var project = new Project
+    {
+      Name = dto.Name,
+      CustomerCompanyId = dto.CustomerCompanyId,
+      ContractorCompanyId = dto.ContractorCompanyId,
+      ManagerId = dto.ManagerId,
+      StartDate = dto.StartDate,
+      EndDate = dto.EndDate,
+      Priority = dto.Priority,
+      Status = dto.Status,
+      CreatedAt = DateTime.UtcNow
+    };
+
+    _context.Projects.Add(project);
+    await _context.SaveChangesAsync();
+
+    return await GetProjectByIdAsync(project.Id) 
+      ?? throw new InvalidOperationException("Failed to retrieve created project");
   }
 
   public async Task<bool> UpdateProjectAsync(int id, UpdateProjectDto dto)
   {
-  var project = await _context.Projects.FindAsync(id);
-  if (project == null) return false;
+    var project = await _context.Projects.FindAsync(id);
+    if (project == null) return false;
 
-  // Validate related entities (optional, if IDs can change)
-  var customerExists = await _context.Companies.AnyAsync(c => c.Id == dto.CustomerCompanyId);
-  var contractorExists = await _context.Companies.AnyAsync(c => c.Id == dto.ContractorCompanyId);
-  var managerExists = await _context.Employees.AnyAsync(e => e.Id == dto.ManagerId);
+    if (!await ValidateRelatedEntitiesAsync(dto.CustomerCompanyId, dto.ContractorCompanyId, dto.ManagerId))
+      throw new ArgumentException("One of the related entities does not exist");
 
-  if (!customerExists || !contractorExists || !managerExists)
-    throw new ArgumentException("One of the related entities does not exist");
+    project.Name = dto.Name;
+    project.CustomerCompanyId = dto.CustomerCompanyId;
+    project.ContractorCompanyId = dto.ContractorCompanyId;
+    project.ManagerId = dto.ManagerId;
+    project.StartDate = dto.StartDate;
+    project.EndDate = dto.EndDate;
+    project.Priority = dto.Priority;
+    project.Status = dto.Status;
 
-  project.Name = dto.Name;
-  project.CustomerCompanyId = dto.CustomerCompanyId;
-  project.ContractorCompanyId = dto.ContractorCompanyId;
-  project.ManagerId = dto.ManagerId;
-  project.StartDate = dto.StartDate;
-  project.EndDate = dto.EndDate;
-  project.Priority = dto.Priority;
-  project.Status = dto.Status;
-
-  await _context.SaveChangesAsync();
-  return true;
+    await _context.SaveChangesAsync();
+    return true;
   }
 
   public async Task<bool> DeleteProjectAsync(int id)
   {
-  var project = await _context.Projects.FindAsync(id);
-  if (project == null) return false;
+    var project = await _context.Projects.FindAsync(id);
+    if (project == null) return false;
 
-  _context.Projects.Remove(project);
-  await _context.SaveChangesAsync();
-  return true;
+    _context.Projects.Remove(project);
+    await _context.SaveChangesAsync();
+    return true;
+  }
+
+  private IQueryable<Project> ApplyFilters(IQueryable<Project> query, ProjectQueryParameters parameters)
+  {
+    if (parameters.StartDateFrom.HasValue)
+      query = query.Where(p => p.StartDate >= parameters.StartDateFrom.Value);
+
+    if (parameters.StartDateTo.HasValue)
+      query = query.Where(p => p.StartDate <= parameters.StartDateTo.Value);
+
+    if (parameters.EndDateFrom.HasValue)
+      query = query.Where(p => p.EndDate.HasValue && p.EndDate.Value >= parameters.EndDateFrom.Value);
+
+    if (parameters.EndDateTo.HasValue)
+      query = query.Where(p => p.EndDate.HasValue && p.EndDate.Value <= parameters.EndDateTo.Value);
+
+    if (parameters.Priority.HasValue)
+      query = query.Where(p => p.Priority == parameters.Priority.Value);
+
+    if (!string.IsNullOrEmpty(parameters.Status))
+      query = query.Where(p => p.Status == parameters.Status);
+
+    if (parameters.CustomerCompanyId.HasValue)
+      query = query.Where(p => p.CustomerCompanyId == parameters.CustomerCompanyId.Value);
+
+    if (parameters.ContractorCompanyId.HasValue)
+      query = query.Where(p => p.ContractorCompanyId == parameters.ContractorCompanyId.Value);
+
+    if (parameters.ManagerId.HasValue)
+      query = query.Where(p => p.ManagerId == parameters.ManagerId.Value);
+
+    return query;
+  }
+
+  private IQueryable<Project> ApplySorting(IQueryable<Project> query, ProjectQueryParameters parameters)
+  {
+    if (string.IsNullOrEmpty(parameters.SortBy))
+      return query.OrderBy(p => p.Id);
+
+    return parameters.SortBy.ToLower() switch
+    {
+      "name" => parameters.Descending ? query.OrderByDescending(p => p.Name) : query.OrderBy(p => p.Name),
+      "startdate" => parameters.Descending ? query.OrderByDescending(p => p.StartDate) : query.OrderBy(p => p.StartDate),
+      "enddate" => parameters.Descending ? query.OrderByDescending(p => p.EndDate) : query.OrderBy(p => p.EndDate),
+      "priority" => parameters.Descending ? query.OrderByDescending(p => p.Priority) : query.OrderBy(p => p.Priority),
+      "status" => parameters.Descending ? query.OrderByDescending(p => p.Status) : query.OrderBy(p => p.Status),
+      "createdat" => parameters.Descending ? query.OrderByDescending(p => p.CreatedAt) : query.OrderBy(p => p.CreatedAt),
+      _ => query.OrderBy(p => p.Id)
+    };
+  }
+
+  private async Task<bool> ValidateRelatedEntitiesAsync(int customerCompanyId, int contractorCompanyId, int managerId)
+  {
+    var customerExists = await _context.Companies.AnyAsync(c => c.Id == customerCompanyId);
+    var contractorExists = await _context.Companies.AnyAsync(c => c.Id == contractorCompanyId);
+    var managerExists = await _context.Employees.AnyAsync(e => e.Id == managerId);
+
+    return customerExists && contractorExists && managerExists;
   }
 }
