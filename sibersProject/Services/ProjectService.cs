@@ -9,10 +9,17 @@ namespace sibersProject.Services;
 public class ProjectService : IProjectService
 {
   private readonly AppDbContext _context;
+  private readonly string _documentsPath;
 
-  public ProjectService(AppDbContext context)
+  public ProjectService(AppDbContext context, IConfiguration configuration)
   {
     _context = context;
+    _documentsPath = configuration.GetValue<string>("DocumentsPath") ?? "./Documents";
+    
+    if (!Directory.Exists(_documentsPath))
+    {
+      Directory.CreateDirectory(_documentsPath);
+    }
   }
 
   private static Expression<Func<Project, ProjectDetailsDto>> ProjectToDetailsDto => p => new ProjectDetailsDto
@@ -127,6 +134,52 @@ public class ProjectService : IProjectService
     if (project == null) return false;
 
     _context.Projects.Remove(project);
+    await _context.SaveChangesAsync();
+    return true;
+  }
+
+  public async Task<ProjectDocumentDto> UploadDocumentAsync(int projectId, string fileName, string filePath)
+  {
+    var project = await _context.Projects.FindAsync(projectId);
+    if (project == null)
+      throw new ArgumentException($"Project with id {projectId} not found");
+
+    var document = new ProjectDocument
+    {
+      ProjectId = projectId,
+      FileName = fileName,
+      FilePath = filePath,
+      UploadedAt = DateTime.UtcNow
+    };
+
+    _context.ProjectDocuments.Add(document);
+    await _context.SaveChangesAsync();
+
+    return new ProjectDocumentDto
+    {
+      Id = document.Id,
+      ProjectId = document.ProjectId,
+      FileName = document.FileName,
+      FilePath = document.FilePath,
+      UploadedAt = document.UploadedAt
+    };
+  }
+
+  public async Task<bool> DeleteDocumentAsync(int projectId, int documentId)
+  {
+    var document = await _context.ProjectDocuments
+      .FirstOrDefaultAsync(d => d.Id == documentId && d.ProjectId == projectId);
+    
+    if (document == null) return false;
+
+    // Удаляем физический файл, если он существует
+    var fullPath = Path.Combine(_documentsPath, document.FilePath.TrimStart('/'));
+    if (File.Exists(fullPath))
+    {
+      File.Delete(fullPath);
+    }
+
+    _context.ProjectDocuments.Remove(document);
     await _context.SaveChangesAsync();
     return true;
   }

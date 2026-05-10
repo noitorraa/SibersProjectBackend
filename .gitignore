@@ -1,34 +1,27 @@
 ```
-# Build outputs
+# Build artifacts
 bin/
 obj/
-out/
+*.dll
+*.exe
+*.pdb
+*.config
+appsettings.Development.json
+appsettings.Production.json
 
 # Dependencies
 packages/
 node_modules/
-.nuget/
-.nyc_output/
-coverage/
 
 # Logs
 *.log
 
-# Environment specific files
+# Environment specific
 .env
 .env.local
-*.env.*
+*.userprefs
 
 # OS generated files
 .DS_Store
 Thumbs.db
-
-# IDE files
-.vs/
-.idea/
-*.swp
-*.swo
-
-# Test results
-TestResults/
 ```

@@ -9,10 +9,14 @@ namespace sibersProject.Controllers;
 public class ProjectsController : ControllerBase
 {
   private readonly IProjectService _projectService;
+  private readonly string _documentsPath;
+  private readonly IConfiguration _configuration;
 
-  public ProjectsController(IProjectService projectService)
+  public ProjectsController(IProjectService projectService, IConfiguration configuration)
   {
-  _projectService = projectService;
+    _projectService = projectService;
+    _configuration = configuration;
+    _documentsPath = configuration.GetValue<string>("DocumentsPath") ?? "./Documents";
   }
 
   // GET: api/projects
@@ -82,5 +86,79 @@ public class ProjectsController : ControllerBase
     return NotFound(new { message = $"Project with id {id} not found" });
 
   return NoContent();
+  }
+
+  // POST: api/projects/{projectId}/documents
+  [HttpPost("{projectId}/documents")]
+  public async Task<IActionResult> UploadDocument(int projectId, IFormFile file)
+  {
+    if (file == null || file.Length == 0)
+      return BadRequest(new { message = "No file uploaded" });
+
+    try
+    {
+      // Проверяем существование проекта
+      var project = await _projectService.GetProjectByIdAsync(projectId);
+      if (project == null)
+        return NotFound(new { message = $"Project with id {projectId} not found" });
+
+      // Создаем уникальное имя файла
+      var uniqueFileName = $"{Guid.NewGuid()}_{file.FileName}";
+      var filePath = $"/{projectId}/{uniqueFileName}";
+      
+      // Создаем директорию для проекта если не существует
+      var projectPath = Path.Combine(_documentsPath, projectId.ToString());
+      if (!Directory.Exists(projectPath))
+      {
+        Directory.CreateDirectory(projectPath);
+      }
+
+      // Сохраняем файл
+      var fullPath = Path.Combine(projectPath, uniqueFileName);
+      using (var stream = new FileStream(fullPath, FileMode.Create))
+      {
+        await file.CopyToAsync(stream);
+      }
+
+      // Сохраняем информацию о документе в БД
+      var document = await _projectService.UploadDocumentAsync(projectId, file.FileName, filePath);
+      
+      return CreatedAtAction(nameof(GetDocumentById), new { projectId, documentId = document.Id }, document);
+    }
+    catch (ArgumentException ex)
+    {
+      return BadRequest(new { error = ex.Message });
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, new { error = $"Internal server error: {ex.Message}" });
+    }
+  }
+
+  // GET: api/projects/{projectId}/documents/{documentId}
+  [HttpGet("{projectId}/documents/{documentId}")]
+  public async Task<IActionResult> GetDocumentById(int projectId, int documentId)
+  {
+    // Этот метод может быть добавлен для получения информации о документе
+    // Для простоты возвращаем заглушку - можно доработать при необходимости
+    return Ok(new { message = "Document retrieval can be implemented here" });
+  }
+
+  // DELETE: api/projects/{projectId}/documents/{documentId}
+  [HttpDelete("{projectId}/documents/{documentId}")]
+  public async Task<IActionResult> DeleteDocument(int projectId, int documentId)
+  {
+    try
+    {
+      var deleted = await _projectService.DeleteDocumentAsync(projectId, documentId);
+      if (!deleted)
+        return NotFound(new { message = $"Document with id {documentId} not found for project {projectId}" });
+
+      return NoContent();
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, new { error = $"Internal server error: {ex.Message}" });
+    }
   }
 }
