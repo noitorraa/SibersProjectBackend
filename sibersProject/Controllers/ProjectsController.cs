@@ -139,9 +139,33 @@ public class ProjectsController : ControllerBase
   [HttpGet("{projectId}/documents/{documentId}")]
   public async Task<IActionResult> GetDocumentById(int projectId, int documentId)
   {
-    // Этот метод может быть добавлен для получения информации о документе
-    // Для простоты возвращаем заглушку - можно доработать при необходимости
-    return Ok(new { message = "Document retrieval can be implemented here" });
+    var documents = await _projectService.GetProjectDocumentsAsync(projectId);
+    var document = documents.FirstOrDefault(d => d.Id == documentId);
+    
+    if (document == null)
+      return NotFound(new { message = $"Document with id {documentId} not found for project {projectId}" });
+
+    return Ok(document);
+  }
+
+  // GET: api/projects/{projectId}/documents
+  [HttpGet("{projectId}/documents")]
+  public async Task<IActionResult> GetProjectDocuments(int projectId)
+  {
+    try
+    {
+      // Проверяем существование проекта
+      var project = await _projectService.GetProjectByIdAsync(projectId);
+      if (project == null)
+        return NotFound(new { message = $"Project with id {projectId} not found" });
+
+      var documents = await _projectService.GetProjectDocumentsAsync(projectId);
+      return Ok(documents);
+    }
+    catch (Exception ex)
+    {
+      return StatusCode(500, new { error = $"Internal server error: {ex.Message}" });
+    }
   }
 
   // DELETE: api/projects/{projectId}/documents/{documentId}
