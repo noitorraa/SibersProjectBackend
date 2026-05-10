@@ -15,4 +15,7 @@ public interface IEmployeeService
     Task<bool> RemoveEmployeeFromProjectAsync(int projectId, int employeeId);
     Task<IEnumerable<EmployeeDto>> GetEmployeesByProjectIdAsync(int projectId);
     Task<IEnumerable<ProjectDto>> GetProjectsByEmployeeIdAsync(int employeeId);
+    
+    // Search employees by partial name match (for autocomplete dropdown)
+    Task<IEnumerable<EmployeeDto>> SearchEmployeesAsync(string searchTerm, int? limit = null);
 }

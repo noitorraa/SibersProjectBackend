@@ -122,6 +122,33 @@ http://localhost:8080/api  (Docker)
 | GET    | `/employees/{employeeId}/projects`             | Получение проектов сотрудника  |
 | POST   | `/employees/{employeeId}/projects/{projectId}` | Добавление сотрудника в проект |
 | DELETE | `/employees/{employeeId}/projects/{projectId}` | Удаление сотрудника из проекта |
+| GET    | `/employees/search?query={text}&limit={n}`     | Поиск сотрудников по частичному совпадению (для autocomplete) |
+
+**Параметры для GET /employees/search:**
+- `query` (string, optional) - текст для поиска (ищет по имени, фамилии, отчеству и email). Если не указан, возвращаются все активные сотрудники.
+- `limit` (int, optional, default: 20) - максимальное количество возвращаемых результатов
+
+**Пример запроса:**
+```http
+GET /api/employees/search?query=ivan&limit=10
+```
+
+**Пример ответа:**
+```json
+[
+  {
+    "id": 1,
+    "firstName": "Ivan",
+    "lastName": "Ivanov",
+    "middleName": "Ivanovich",
+    "email": "ivan@example.com",
+    "isActive": 1,
+    "projects": []
+  }
+]
+```
+
+**Примечание для frontend:** Для оптимизации количества запросов при вводе текста в поле поиска рекомендуется использовать debounce с задержкой ~300мс.
 
 ## 📦 Модели данных
 
