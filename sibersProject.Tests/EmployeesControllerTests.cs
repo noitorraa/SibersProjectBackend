@@ -332,4 +332,82 @@ public class EmployeesControllerTests
         property.Should().NotBeNull();
         property!.GetValue(value).Should().Be(errorMessage);
     }
+
+    // GET /api/employees/search
+    [Fact]
+    public async Task SearchEmployees_WithQuery_ShouldReturnOk_WithListOfEmployees()
+    {
+        // Arrange
+        var expectedEmployees = new List<EmployeeDto>
+        {
+            new EmployeeDto { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@example.com", IsActive = 1 }
+        };
+        _serviceMock.Setup(s => s.SearchEmployeesAsync("Ivan", 20))
+                    .ReturnsAsync(expectedEmployees);
+
+        // Act
+        var result = await _controller.SearchEmployees("Ivan", 20);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnedEmployees = okResult.Value.Should().BeAssignableTo<IEnumerable<EmployeeDto>>().Subject;
+        returnedEmployees.Should().BeEquivalentTo(expectedEmployees);
+    }
+
+    [Fact]
+    public async Task SearchEmployees_WithoutQuery_ShouldReturnAllActiveEmployees()
+    {
+        // Arrange
+        var expectedEmployees = new List<EmployeeDto>
+        {
+            new EmployeeDto { Id = 1, FirstName = "Ivan", LastName = "Ivanov", Email = "ivan@example.com", IsActive = 1 },
+            new EmployeeDto { Id = 2, FirstName = "Anna", LastName = "Petrova", Email = "anna@example.com", IsActive = 1 }
+        };
+        _serviceMock.Setup(s => s.SearchEmployeesAsync("", 20))
+                    .ReturnsAsync(expectedEmployees);
+
+        // Act
+        var result = await _controller.SearchEmployees(null, 20);
+
+        // Assert
+        var okResult = result.Should().BeOfType<OkObjectResult>().Subject;
+        var returnedEmployees = okResult.Value.Should().BeAssignableTo<IEnumerable<EmployeeDto>>().Subject;
+        returnedEmployees.Should().BeEquivalentTo(expectedEmployees);
+    }
+
+    [Fact]
+    public async Task SearchEmployees_WithDefaultLimit_ShouldUseDefaultLimitOf20()
+    {
+        // Arrange
+        var expectedEmployees = new List<EmployeeDto>();
+        _serviceMock.Setup(s => s.SearchEmployeesAsync("", 20))
+                    .ReturnsAsync(expectedEmployees);
+
+        // Act
+        var result = await _controller.SearchEmployees(null);
+
+        // Assert
+        result.Should().BeOfType<OkObjectResult>();
+        _serviceMock.Verify(s => s.SearchEmployeesAsync("", 20), Times.Once);
+    }
+
+    [Fact]
+    public async Task SearchEmployees_WhenServiceThrowsException_ShouldReturnBadRequest()
+    {
+        // Arrange
+        var errorMessage = "Search failed";
+        _serviceMock.Setup(s => s.SearchEmployeesAsync("test", 20))
+                    .ThrowsAsync(new Exception(errorMessage));
+
+        // Act
+        var result = await _controller.SearchEmployees("test", 20);
+
+        // Assert
+        var badRequestResult = result.Should().BeOfType<BadRequestObjectResult>().Subject;
+        var value = badRequestResult.Value;
+        value.Should().NotBeNull();
+        var property = value!.GetType().GetProperty("error");
+        property.Should().NotBeNull();
+        property!.GetValue(value).Should().Be(errorMessage);
+    }
 }

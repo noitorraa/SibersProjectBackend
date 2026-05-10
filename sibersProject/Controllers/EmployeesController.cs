@@ -140,4 +140,12 @@ public class EmployeesController : ControllerBase
             return BadRequest(new { error = ex.Message });
         }
     }
+
+    // GET: api/employees/search
+    [HttpGet("search")]
+    public async Task<IActionResult> SearchEmployees([FromQuery] string? query, [FromQuery] int? limit = 20)
+    {
+        var employees = await _employeeService.SearchEmployeesAsync(query ?? string.Empty, limit);
+        return Ok(employees);
+    }
 }

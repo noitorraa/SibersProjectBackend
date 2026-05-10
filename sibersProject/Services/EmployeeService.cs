@@ -219,4 +219,58 @@ public class EmployeeService : IEmployeeService
 
         return projects;
     }
+
+    public async Task<IEnumerable<EmployeeDto>> SearchEmployeesAsync(string searchTerm, int? limit = null)
+    {
+        if (string.IsNullOrWhiteSpace(searchTerm))
+        {
+            // If no search term, return all active employees (limited)
+            var query = _context.Employees
+                .Where(e => e.IsActive == 1)
+                .Select(e => new EmployeeDto
+                {
+                    Id = e.Id,
+                    FirstName = e.FirstName,
+                    LastName = e.LastName,
+                    MiddleName = e.MiddleName,
+                    Email = e.Email,
+                    IsActive = e.IsActive,
+                    Projects = new List<EmployeeProjectDto>()
+                });
+
+            if (limit.HasValue)
+            {
+                query = query.Take(limit.Value);
+            }
+
+            return await query.ToListAsync();
+        }
+
+        var searchPattern = $"%{searchTerm}%";
+        
+        var employees = await _context.Employees
+            .Where(e => e.IsActive == 1 && 
+                       (EF.Functions.Like(e.FirstName, searchPattern) ||
+                        EF.Functions.Like(e.LastName, searchPattern) ||
+                        EF.Functions.Like(e.MiddleName, searchPattern) ||
+                        EF.Functions.Like(e.Email, searchPattern)))
+            .Select(e => new EmployeeDto
+            {
+                Id = e.Id,
+                FirstName = e.FirstName,
+                LastName = e.LastName,
+                MiddleName = e.MiddleName,
+                Email = e.Email,
+                IsActive = e.IsActive,
+                Projects = new List<EmployeeProjectDto>()
+            })
+            .ToListAsync();
+
+        if (limit.HasValue && employees.Count > limit.Value)
+        {
+            employees = employees.Take(limit.Value).ToList();
+        }
+
+        return employees;
+    }
 }
