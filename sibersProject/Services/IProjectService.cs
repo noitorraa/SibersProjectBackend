@@ -12,4 +12,5 @@ public interface IProjectService
   Task<bool> DeleteProjectAsync(int id);
   Task<ProjectDocumentDto> UploadDocumentAsync(int projectId, string fileName, string filePath);
   Task<bool> DeleteDocumentAsync(int projectId, int documentId);
+  Task<IEnumerable<ProjectDocumentDto>> GetProjectDocumentsAsync(int projectId);
 }

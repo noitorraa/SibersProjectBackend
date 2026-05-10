@@ -184,6 +184,23 @@ public class ProjectService : IProjectService
     return true;
   }
 
+  public async Task<IEnumerable<ProjectDocumentDto>> GetProjectDocumentsAsync(int projectId)
+  {
+    var documents = await _context.ProjectDocuments
+      .Where(d => d.ProjectId == projectId)
+      .Select(d => new ProjectDocumentDto
+      {
+        Id = d.Id,
+        ProjectId = d.ProjectId,
+        FileName = d.FileName,
+        FilePath = d.FilePath,
+        UploadedAt = d.UploadedAt
+      })
+      .ToListAsync();
+
+    return documents;
+  }
+
   private IQueryable<Project> ApplyFilters(IQueryable<Project> query, ProjectQueryParameters parameters)
   {
     if (parameters.StartDateFrom.HasValue)

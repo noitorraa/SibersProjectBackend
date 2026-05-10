@@ -1,27 +1,39 @@
 ```
 # Build artifacts
-bin/
-obj/
 *.dll
 *.exe
 *.pdb
 *.config
-appsettings.Development.json
-appsettings.Production.json
+bin/
+obj/
+Debug/
+Release/
 
 # Dependencies
 packages/
 node_modules/
+.nuget/
 
 # Logs
 *.log
 
-# Environment specific
+# Environment
 .env
 .env.local
-*.userprefs
+*.env.*
 
-# OS generated files
+# Editors
+.vs/
+.idea/
+*.swp
+*.swo
+
+# OS
 .DS_Store
 Thumbs.db
+
+# Test coverage
+coverage/
+htmlcov/
+*.coverage
 ```
